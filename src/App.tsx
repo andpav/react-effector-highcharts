@@ -1,26 +1,70 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import * as React from 'react'
+import { useStore } from 'effector-react'
+import { useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
 
-function App() {
+import { Chart } from './features/chart'
+import {
+  setRange,
+  $chartData,
+  $averagedChartData,
+  $chartShowing,
+  $range,
+  changeFromOrTo,
+  datesValidationScheme,
+  DateValidationScheme
+} from './features/model'
+
+export default function App() {
+  const chartData = useStore($chartData)
+  const averagedChartData = useStore($averagedChartData)
+  const chartShowing = useStore($chartShowing)
+  const range = useStore($range)
+
+  const { register, errors, formState, handleSubmit } = useForm({
+    resolver: yupResolver(datesValidationScheme),
+    defaultValues: { from: '', to: '' }
+  })
+
+  const { dirtyFields } = formState
+  const { from: fromTouched, to: toTouched } = dirtyFields
+  const { from: fromError, to: toError } = errors
+
+  const onSubmit = (data: DateValidationScheme) => changeFromOrTo(data)
+  const submit = handleSubmit(onSubmit)
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <div>
+      <div style={{ display: 'flex' }}>
+        <div>
+          <input type='date' name='from' ref={register} onChange={submit} />
+          {fromTouched && (
+            <div style={{ color: 'red', fontSize: '12px' }}>
+              {fromError?.message}
+            </div>
+          )}
+        </div>
+        <div>
+          <input type='date' name='to' ref={register} onChange={submit} />
+          {toTouched && (
+            <div style={{ color: 'red', fontSize: '12px' }}>
+              {toError?.message}
+            </div>
+          )}
+        </div>
+        <select
+          defaultValue={range}
+          onChange={(e) => setRange(e.currentTarget.value)}
         >
-          Learn React
-        </a>
-      </header>
+          <option>1d</option>
+          <option>3d</option>
+          <option>5d</option>
+          <option>7d</option>
+        </select>
+      </div>
+      {chartShowing ? (
+        <Chart data={chartData} average={averagedChartData} />
+      ) : null}
     </div>
-  );
+  )
 }
-
-export default App;
