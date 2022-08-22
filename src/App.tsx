@@ -12,7 +12,7 @@ import {
   $range,
   changeFromOrTo,
   datesValidationScheme,
-  DateValidationScheme
+  DateValidationScheme,
 } from './features/model'
 
 export default function App() {
@@ -21,9 +21,14 @@ export default function App() {
   const chartShowing = useStore($chartShowing)
   const range = useStore($range)
 
-  const { register, errors, formState, handleSubmit } = useForm({
+  const {
+    register,
+    formState: { errors },
+    formState,
+    handleSubmit,
+  } = useForm({
     resolver: yupResolver(datesValidationScheme),
-    defaultValues: { from: '', to: '' }
+    defaultValues: { from: new Date(), to: new Date() },
   })
 
   const { dirtyFields } = formState
@@ -37,34 +42,21 @@ export default function App() {
     <div>
       <div style={{ display: 'flex' }}>
         <div>
-          <input type='date' name='from' ref={register} onChange={submit} />
-          {fromTouched && (
-            <div style={{ color: 'red', fontSize: '12px' }}>
-              {fromError?.message}
-            </div>
-          )}
+          <input type="date" {...register('from')} onChange={submit} />
+          {fromTouched && <div style={{ color: 'red', fontSize: '12px' }}>{fromError?.message}</div>}
         </div>
         <div>
-          <input type='date' name='to' ref={register} onChange={submit} />
-          {toTouched && (
-            <div style={{ color: 'red', fontSize: '12px' }}>
-              {toError?.message}
-            </div>
-          )}
+          <input type="date" {...register('to')} onChange={submit} />
+          {toTouched && <div style={{ color: 'red', fontSize: '12px' }}>{toError?.message}</div>}
         </div>
-        <select
-          defaultValue={range}
-          onChange={(e) => setRange(e.currentTarget.value)}
-        >
+        <select defaultValue={range} onChange={(e) => setRange(e.currentTarget.value)}>
           <option>1d</option>
           <option>3d</option>
           <option>5d</option>
           <option>7d</option>
         </select>
       </div>
-      {chartShowing ? (
-        <Chart data={chartData} average={averagedChartData} />
-      ) : null}
+      {chartShowing ? <Chart data={chartData} average={averagedChartData} /> : null}
     </div>
   )
 }
